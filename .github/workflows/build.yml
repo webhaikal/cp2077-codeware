@@ -8,6 +8,9 @@ on:
     branches: ["main"]
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build-windows:
     runs-on: windows-latest
@@ -32,19 +35,10 @@ jobs:
 
       - name: Build
         run: xmake -y -v
-
-      - name: Package mod
-        shell: pwsh
-        run: |
-          $ReleaseBinPath = "build/windows/x64/release/Codeware.dll"
-          
-          Write-Output "Packaging using binary from: $ReleaseBinPath"
-          ./tools/dist/package-mod.ps1 -ReleaseBin "build/windows/x64/release/Codeware.dll"
-
+        
       - name: Create GitHub Release and Upload Artifacts
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         uses: softprops/action-gh-release@v3
         with:
-          working_directory: build/dist
-          files: *.zip
+          files: build/windows/x64/release/Codeware.dll
