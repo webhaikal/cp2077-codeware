@@ -44,21 +44,7 @@ jobs:
       - name: Create GitHub Release and Upload Artifacts
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        shell: pwsh
-        run: |
-          # Dynamically extract version via your repository script to match the tag name
-          $Version = & ./tools/dist/steps/get-version.ps1
-          $TagName = "v$Version"
-
-          # Check if the release already exists to avoid conflicts on re-runs
-          $ReleaseExists = gh release view $TagName 2>$null
-          
-          if (-not $ReleaseExists) {
-              # Creates the release using both the mod and the pdb zip files from build/dist
-              gh release create $TagName build/dist/*.zip `
-                --title "Release $TagName" `
-                --notes "Automated build release for version $Version"
-          } else {
-              # If you are testing and the release already exists, upload/overwrite the assets instead
-              gh release upload $TagName build/dist/*.zip --clobber
-          }
+        uses: softprops/action-gh-release@v3
+        with:
+          working_directory: build/dist
+          files: *.zip
