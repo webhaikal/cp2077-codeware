@@ -33,9 +33,19 @@ jobs:
       - name: Build
         run: xmake -y -v
 
-      - name: Package
+      - name: Package mod
         shell: pwsh
-        run: ./tools/dist/package-mod.ps1
+        run: |
+          $TargetFile = xmake show -t Codeware --targetdir
+          $ReleaseBinPath = Join-Path $TargetFile "Codeware.dll"
+          
+          # If the file isn't directly in targetdir, check standard build outputs:
+          if (-not (Test-Path $ReleaseBinPath)) {
+              $ReleaseBinPath = "build/windows/x64/release/Codeware.dll"
+          }
+          
+          Write-Output "Packaging using binary from: $ReleaseBinPath"
+          ./tools/dist/package-mod.ps1 -ReleaseBin $ReleaseBinPath
 
       - name: Create GitHub Release and Upload Artifacts
         env:
